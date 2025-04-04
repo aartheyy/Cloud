@@ -1,6 +1,6 @@
 from flask import Flask
-app = Flask(__name__)
+from db import db
 
-@app.route('/')
-def hello():
-    return "Hello from Azure!"
+app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///todo.db'
+db.init_app(app)
