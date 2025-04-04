@@ -4,11 +4,13 @@ from app import app
 
 @app.route('/tasks', methods=['GET'])
 def get_tasks():
+    # Get all tasks from the database
     tasks = Task.query.all()
     return jsonify([{'id': t.id, 'title': t.title, 'completed': t.completed} for t in tasks])
 
 @app.route('/tasks', methods=['POST'])
 def add_task():
+    # Add a new task to the database
     data = request.get_json()
     new_task = Task(title=data['title'])
     db.session.add(new_task)
@@ -17,6 +19,7 @@ def add_task():
 
 @app.route('/tasks/<int:task_id>', methods=['PUT'])
 def update_task(task_id):
+    # Mark a task as completed
     task = Task.query.get(task_id)
     if not task:
         return jsonify({'error': 'Task not found'}), 404
@@ -26,6 +29,7 @@ def update_task(task_id):
 
 @app.route('/tasks/<int:task_id>', methods=['DELETE'])
 def delete_task(task_id):
+    # Delete a task from the database
     task = Task.query.get(task_id)
     if not task:
         return jsonify({'error': 'Task not found'}), 404
