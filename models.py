@@ -6,4 +6,4 @@ class Task(db.Model):
     completed = db.Column(db.Boolean, default=False)
 
     def __repr__(self):
-        return f'<Task {self.id} - {self.title}>'
+        return f'<Task {self.title}>'
