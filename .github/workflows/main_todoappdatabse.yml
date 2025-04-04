@@ -1,3 +1,7 @@
+# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
+# More GitHub Actions for Azure: https://github.com/Azure/actions
+# More info on Python, GitHub Actions, and Azure App Service: https://aka.ms/python-webapps-actions
+
 name: Build and deploy Python app to Azure Web App - todoappdatabse
 
 on:
@@ -10,34 +14,33 @@ jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
-      contents: read  # This is required for actions/checkout
+      contents: read #This is required for actions/checkout
 
     steps:
-      # Step 1: Check out the repository
       - uses: actions/checkout@v4
 
-      # Step 2: Set up Python environment
       - name: Set up Python version
         uses: actions/setup-python@v5
         with:
           python-version: '3.13'
 
-      # Step 3: Install dependencies
-      - name: Install dependencies
+      - name: Create and start virtual environment
         run: |
           python -m venv venv
           source venv/bin/activate
-          pip install -r requirements.txt
+        
+      # Optional: Add step to run tests here (PyTest, Django test suites, etc.)
 
-      # Step 4: Package the app into a zip file for deployment
       - name: Zip artifact for deployment
-        run: zip -r release.zip ./*
+        run: zip release.zip ./* -r
 
-      # Step 5: Upload artifact for deployment
-      - uses: actions/upload-artifact@v4
+      - name: Upload artifact for deployment jobs
+        uses: actions/upload-artifact@v4
         with:
           name: python-app
-          path: release.zip
+          path: |
+            release.zip
+            !venv/
 
   deploy:
     runs-on: ubuntu-latest
@@ -45,19 +48,20 @@ jobs:
     environment:
       name: 'Production'
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
+    permissions:
+      id-token: write #This is required for requesting the JWT
+      contents: read #This is required for actions/checkout
 
     steps:
-      # Step 1: Download artifact from the build job
       - name: Download artifact from build job
         uses: actions/download-artifact@v4
         with:
           name: python-app
 
-      # Step 2: Unzip artifact for deployment
       - name: Unzip artifact for deployment
         run: unzip release.zip
 
-      # Step 3: Login to Azure
+      
       - name: Login to Azure
         uses: azure/login@v2
         with:
@@ -65,10 +69,10 @@ jobs:
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_9DFA01257DC04B31B815166AAC2E8E08 }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_1FC786FE4522429EBB70FDE7FE89B2BC }}
 
-      # Step 4: Deploy to Azure Web App
-      - name: Deploy to Azure Web App
+      - name: 'Deploy to Azure Web App'
         uses: azure/webapps-deploy@v3
         id: deploy-to-webapp
         with:
           app-name: 'todoappdatabse'
           slot-name: 'Production'
+          
