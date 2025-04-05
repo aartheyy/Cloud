@@ -2,6 +2,7 @@ from flask import Flask
 from models import Task
 from db import db
 import os
+import routes 
 
 app = Flask(__name__)
 
