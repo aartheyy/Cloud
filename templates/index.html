@@ -1,8 +1,41 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>To-Do List with Login</title>
+    <title>To-Do List</title>
     <meta charset="UTF-8">
+    <style>
+        body { font-family: Arial, sans-serif; padding: 2rem; }
+        input, button { margin: 0.2rem; }
+        #task-list li { margin-bottom: 0.5rem; }
+    </style>
+</head>
+<body>
+    <h1>To-Do List</h1>
+
+    <!-- 👤 Auth Section -->
+    <div id="auth-section" style="display:none;">
+        <h3>Login</h3>
+        <input type="text" id="login-username" placeholder="Username">
+        <input type="password" id="login-password" placeholder="Password">
+        <button onclick="loginUser()">Login</button>
+
+        <h3>Register</h3>
+        <input type="text" id="reg-username" placeholder="Username">
+        <input type="password" id="reg-password" placeholder="Password">
+        <button onclick="registerUser()">Register</button>
+    </div>
+
+    <!-- 📋 App Section -->
+    <div id="app-section" style="display:none;">
+        <p>Logged in as: <strong id="username-display"></strong></p>
+        <button onclick="logoutUser()">Logout</button>
+
+        <ul id="task-list"></ul>
+
+        <input type="text" id="new-task-title" placeholder="New task title">
+        <button onclick="addTask()">Add Task</button>
+    </div>
+
     <script>
         let loggedIn = false;
 
@@ -31,7 +64,8 @@
                 body: JSON.stringify({ username, password }),
                 credentials: 'include'
             });
-            alert((await res.json()).message);
+            const msg = await res.json();
+            alert(msg.message || msg.error);
             checkLogin();
         }
 
@@ -45,11 +79,7 @@
                 credentials: 'include'
             });
             const data = await res.json();
-            if (res.ok) {
-                alert('Login successful');
-            } else {
-                alert(data.error || 'Login failed');
-            }
+            alert(data.message || data.error);
             checkLogin();
         }
 
@@ -88,43 +118,22 @@
         }
 
         async function completeTask(id) {
-            await fetch(`/tasks/${id}`, { method: 'PUT', credentials: 'include' });
+            await fetch(`/tasks/${id}`, {
+                method: 'PUT',
+                credentials: 'include'
+            });
             fetchTasks();
         }
 
         async function deleteTask(id) {
-            await fetch(`/tasks/${id}`, { method: 'DELETE', credentials: 'include' });
+            await fetch(`/tasks/${id}`, {
+                method: 'DELETE',
+                credentials: 'include'
+            });
             fetchTasks();
         }
 
         window.onload = checkLogin;
     </script>
-</head>
-<body>
-    <h1>To-Do List</h1>
-
-    <!-- 👤 Auth Section -->
-    <div id="auth-section" style="display:none;">
-        <h3>Login</h3>
-        <input type="text" id="login-username" placeholder="Username">
-        <input type="password" id="login-password" placeholder="Password">
-        <button onclick="loginUser()">Login</button>
-
-        <h3>Register</h3>
-        <input type="text" id="reg-username" placeholder="Username">
-        <input type="password" id="reg-password" placeholder="Password">
-        <button onclick="registerUser()">Register</button>
-    </div>
-
-    <!-- 📋 App Section -->
-    <div id="app-section" style="display:none;">
-        <p>Logged in as: <strong id="username-display"></strong></p>
-        <button onclick="logoutUser()">Logout</button>
-
-        <ul id="task-list"></ul>
-
-        <input type="text" id="new-task-title" placeholder="New task title">
-        <button onclick="addTask()">Add Task</button>
-    </div>
 </body>
 </html>
