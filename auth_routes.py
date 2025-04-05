@@ -1,6 +1,6 @@
 # auth_routes.py
 
-from flask import request, jsonify
+from flask import request, jsonify,render_template
 from flask_login import login_user, login_required, logout_user, current_user
 from models import Task, User
 from db import db
@@ -9,9 +9,9 @@ from app import bcrypt  # only this import is safe
 def register_auth_routes(app):
     @app.route('/tasks', methods=['GET'])
     @login_required
-    def get_tasks():
-        tasks = Task.query.all()
-        return jsonify([{'id': t.id, 'title': t.title, 'completed': t.completed} for t in tasks])
+    def get_tasks_html():
+        tasks = Task.query.filter_by(user_id=current_user.id).all()
+    return render_template("tasks.html", tasks=tasks, username=current_user.username)
 
     @app.route('/tasks', methods=['POST'])
     @login_required
