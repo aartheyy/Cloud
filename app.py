@@ -2,20 +2,18 @@ from flask import Flask, render_template
 from models import Task
 from db import db
 import os
-
+import routes  # make sure this is after Flask
 
 app = Flask(__name__)
 
-# SQLite Database URI for local development
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///todo.db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  # Optional, to suppress a warning
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db.init_app(app)
+
 @app.before_first_request
 def create_tables():
     db.create_all()
-
-    # Insert only if DB is empty
     if not Task.query.first():
         sample_tasks = [
             Task(title="Learn Azure"),
@@ -24,13 +22,12 @@ def create_tables():
         ]
         db.session.add_all(sample_tasks)
         db.session.commit()
-    
-@app.route('/')
-def home():
-    return render_template('index.html')
 
-import routes
-routes.register_routes(app)
+@app.route("/")
+def index():
+    return render_template("index.html")  # <-- must be after `render_template` is imported
+
+routes.register_routes(app)  # <-- must be called after `app` is created
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8000))
