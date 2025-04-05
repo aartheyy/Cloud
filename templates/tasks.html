@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Your Tasks</title>
+</head>
+<body>
+  <h1>Hello, {{ username }} 👋</h1>
+  <h2>Your Tasks</h2>
+
+  <ul>
+    {% for task in tasks %}
+      <li>
+        {{ task.title }} 
+        {% if task.completed %}
+          ✅
+        {% else %}
+          <form action="/tasks/{{ task.id }}" method="post" style="display:inline;">
+            <input type="hidden" name="_method" value="PUT">
+            <button type="submit">Mark Done</button>
+          </form>
+        {% endif %}
+        <form action="/tasks/{{ task.id }}" method="post" style="display:inline;">
+          <input type="hidden" name="_method" value="DELETE">
+          <button type="submit">Delete</button>
+        </form>
+      </li>
+    {% endfor %}
+  </ul>
+
+  <h3>Add New Task</h3>
+  <form action="/tasks" method="post">
+    <input type="text" name="title" required>
+    <button type="submit">Add</button>
+  </form>
+</body>
+</html>
