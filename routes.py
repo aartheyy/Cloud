@@ -1,7 +1,7 @@
 from flask import request, jsonify
 from models import Task
 from db import db
-from flask_login import login_user, login_required, logout_user
+from flask_login import login_user, login_required, logout_user, current_user
 from app import bcrypt
 
 def register_routes(app):
@@ -63,3 +63,9 @@ def register_routes(app):
     def logout():
         logout_user()
         return jsonify({'message': 'Logged out'})
+
+    @app.route('/profile')
+    def profile():
+        if current_user.is_authenticated:
+            return jsonify({'logged_in': True, 'username': current_user.username})
+        return jsonify({'logged_in': False})
