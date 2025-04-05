@@ -7,6 +7,7 @@ bcrypt = Bcrypt(app)
 
 def register_routes(app):
     @app.route('/tasks', methods=['GET'])
+    @login_required
     def get_tasks():
         tasks = Task.query.all()
         return jsonify([{'id': t.id, 'title': t.title, 'completed': t.completed} for t in tasks])
