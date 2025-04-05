@@ -7,6 +7,7 @@
         body { font-family: Arial, sans-serif; padding: 2rem; }
         input, button { margin: 0.2rem; }
         #task-list li { margin-bottom: 0.5rem; }
+        .done { text-decoration: line-through; color: gray; }
     </style>
 </head>
 <body>
@@ -37,21 +38,21 @@
     </div>
 
     <script>
-        let loggedIn = false;
-
         async function checkLogin() {
-            const res = await fetch('/profile', { credentials: 'include' });
-            const data = await res.json();
-            loggedIn = data.logged_in;
-
-            if (loggedIn) {
-                document.getElementById('auth-section').style.display = 'none';
-                document.getElementById('app-section').style.display = 'block';
-                document.getElementById('username-display').innerText = data.username;
-                fetchTasks();
-            } else {
-                document.getElementById('auth-section').style.display = 'block';
-                document.getElementById('app-section').style.display = 'none';
+            try {
+                const res = await fetch('/profile', { credentials: 'include' });
+                const data = await res.json();
+                if (data.logged_in) {
+                    document.getElementById('auth-section').style.display = 'none';
+                    document.getElementById('app-section').style.display = 'block';
+                    document.getElementById('username-display').innerText = data.username;
+                    fetchTasks();
+                } else {
+                    document.getElementById('auth-section').style.display = 'block';
+                    document.getElementById('app-section').style.display = 'none';
+                }
+            } catch (err) {
+                console.error("Login check failed:", err);
             }
         }
 
@@ -92,12 +93,14 @@
             const res = await fetch('/tasks', { credentials: 'include' });
             const tasks = await res.json();
             const list = document.getElementById('task-list');
-            list.innerHTML = '';
+            list.innerHTML = ''; // Clear list
+
             tasks.forEach(task => {
                 const li = document.createElement('li');
+                li.className = task.completed ? 'done' : '';
                 li.innerHTML = `
-                    ${task.completed ? '<s>' : ''}${task.title}${task.completed ? '</s>' : ''}
-                    <button onclick="completeTask(${task.id})">✔️</button>
+                    ${task.title}
+                    ${!task.completed ? `<button onclick="completeTask(${task.id})">✔️</button>` : ''}
                     <button onclick="deleteTask(${task.id})">❌</button>
                 `;
                 list.appendChild(li);
@@ -105,16 +108,18 @@
         }
 
         async function addTask() {
-            const title = document.getElementById('new-task-title').value;
+            const title = document.getElementById('new-task-title').value.trim();
             if (!title) return;
+
             await fetch('/tasks', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ title }),
                 credentials: 'include'
             });
+
             document.getElementById('new-task-title').value = '';
-            fetchTasks();
+            fetchTasks(); // Refresh immediately
         }
 
         async function completeTask(id) {
@@ -122,7 +127,7 @@
                 method: 'PUT',
                 credentials: 'include'
             });
-            fetchTasks();
+            fetchTasks(); // Refresh
         }
 
         async function deleteTask(id) {
@@ -130,7 +135,7 @@
                 method: 'DELETE',
                 credentials: 'include'
             });
-            fetchTasks();
+            fetchTasks(); // Refresh
         }
 
         window.onload = checkLogin;
