@@ -1,13 +1,22 @@
 # auth_routes.py
 
-from flask import request, jsonify,render_template, url_for, redirect
+from flask import request, jsonify, render_template, url_for, redirect
 from flask_login import login_user, login_required, logout_user, current_user
 from models import Task, User
 from db import db
-from extensions import bcrypt 
+from extensions import bcrypt
 
 def register_auth_routes(app):
     @app.route('/tasks', methods=['GET'])
+    @login_required
+    def get_tasks_json():
+        tasks = Task.query.filter_by(user_id=current_user.id).all()
+        return jsonify([
+            {'id': task.id, 'title': task.title, 'completed': task.completed}
+            for task in tasks
+        ])
+
+    @app.route('/tasks/view', methods=['GET'])
     @login_required
     def get_tasks_html():
         tasks = Task.query.filter_by(user_id=current_user.id).all()
@@ -22,7 +31,9 @@ def register_auth_routes(app):
         new_task = Task(title=title, user_id=current_user.id)
         db.session.add(new_task)
         db.session.commit()
-        return redirect(url_for('get_tasks_html')) if request.form else jsonify({'message': 'Task added'}), 201
+        if request.form:
+            return redirect(url_for('get_tasks_html'))
+        return jsonify({'message': 'Task added'}), 201
 
     @app.route('/tasks/<int:task_id>', methods=['POST'])
     @login_required
