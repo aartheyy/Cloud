@@ -2,7 +2,7 @@ from flask import Flask
 from models import Task
 from db import db
 import os
-import routes 
+
 
 app = Flask(__name__)
 
@@ -28,6 +28,9 @@ def create_tables():
 @app.route('/')
 def home():
     return "Welcome to the To-Do List App!"
+
+import routes
+routes.register_routes(app)
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8000))
