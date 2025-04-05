@@ -40,6 +40,14 @@ def create_tables():
 def index():
     return render_template("index.html")
 
+import socket
+
+@app.route("/whoami")
+def whoami():
+    hostname = socket.gethostname()
+    return f"Handled by instance: {hostname}"
+
+
 from auth_routes import register_auth_routes
 register_auth_routes(app)
 
