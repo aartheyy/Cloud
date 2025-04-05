@@ -1,65 +1,89 @@
 # auth_routes.py
 
-from flask import request, jsonify, render_template, redirect, url_for
+from flask import request, jsonify
 from flask_login import login_user, login_required, logout_user, current_user
-from models import User, Task
-from db import db
-from extensions import bcrypt
-
+from models import Task, User
+from extensions import db, bcrypt
 
 def register_auth_routes(app):
+
+    # -------------------------------
+    # ✅ CRUD Routes (JSON-based API)
+    # -------------------------------
+
     @app.route('/tasks', methods=['GET'])
     @login_required
-    def get_tasks_html():
+    def get_tasks():
         tasks = Task.query.filter_by(user_id=current_user.id).all()
-        return render_template('tasks.html', tasks=tasks, username=current_user.username)
+        return jsonify([
+            {'id': t.id, 'title': t.title, 'completed': t.completed}
+            for t in tasks
+        ])
 
     @app.route('/tasks', methods=['POST'])
     @login_required
     def add_task():
-        title = request.form.get('title') or (request.json and request.json.get('title'))
+        data = request.get_json()
+        title = data.get('title')
         if not title:
             return jsonify({'error': 'No title provided'}), 400
         new_task = Task(title=title, user_id=current_user.id)
         db.session.add(new_task)
         db.session.commit()
-        if request.form:
-            return redirect(url_for('get_tasks_html'))
         return jsonify({'message': 'Task added'}), 201
 
-    @app.route('/tasks/<int:task_id>', methods=['POST'])
+    @app.route('/tasks/<int:task_id>', methods=['PUT'])
     @login_required
-    def update_or_delete_task(task_id):
+    def complete_task(task_id):
         task = Task.query.get(task_id)
         if not task or task.user_id != current_user.id:
             return jsonify({'error': 'Task not found'}), 404
+        task.completed = True
+        db.session.commit()
+        return jsonify({'message': 'Task marked as completed'})
 
-        method = request.form.get('_method')
-        if method == 'PUT':
-            task.completed = True
-            db.session.commit()
-        elif method == 'DELETE':
-            db.session.delete(task)
-            db.session.commit()
-        return redirect(url_for('get_tasks_html'))
+    @app.route('/tasks/<int:task_id>', methods=['DELETE'])
+    @login_required
+    def delete_task(task_id):
+        task = Task.query.get(task_id)
+        if not task or task.user_id != current_user.id:
+            return jsonify({'error': 'Task not found'}), 404
+        db.session.delete(task)
+        db.session.commit()
+        return jsonify({'message': 'Task deleted'})
 
-    @app.route('/login', methods=['POST'])
-    def login():
-        data = request.get_json()
-        user = User.query.filter_by(username=data['username']).first()
-        if user and bcrypt.check_password_hash(user.password, data['password']):
-            login_user(user)
-            return jsonify({'message': 'Logged in'})
-        return jsonify({'error': 'Invalid credentials'}), 401
+    # -------------------------------
+    # ✅ Auth Routes (JSON-based API)
+    # -------------------------------
 
     @app.route('/register', methods=['POST'])
     def register():
         data = request.get_json()
-        hashed_pw = bcrypt.generate_password_hash(data['password']).decode('utf-8')
-        new_user = User(username=data['username'], password=hashed_pw)
+        username = data.get('username')
+        password = data.get('password')
+        if not username or not password:
+            return jsonify({'error': 'Missing username or password'}), 400
+        existing_user = User.query.filter_by(username=username).first()
+        if existing_user:
+            return jsonify({'error': 'User already exists'}), 409
+        hashed_pw = bcrypt.generate_password_hash(password).decode('utf-8')
+        new_user = User(username=username, password=hashed_pw)
         db.session.add(new_user)
         db.session.commit()
         return jsonify({'message': 'User registered'})
+
+    @app.route('/login', methods=['POST'])
+    def login():
+        data = request.get_json()
+        username = data.get('username')
+        password = data.get('password')
+        if not username or not password:
+            return jsonify({'error': 'Missing credentials'}), 400
+        user = User.query.filter_by(username=username).first()
+        if user and bcrypt.check_password_hash(user.password, password):
+            login_user(user)
+            return jsonify({'message': 'Login successful'})
+        return jsonify({'error': 'Invalid credentials'}), 401
 
     @app.route('/logout')
     @login_required
