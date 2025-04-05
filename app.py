@@ -27,7 +27,7 @@ def create_tables():
     
 @app.route('/')
 def home():
-    return "Welcome to the To-Do List App!"
+    return render_template('index.html')
 
 import routes
 routes.register_routes(app)
