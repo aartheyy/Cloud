@@ -35,21 +35,32 @@ def register_auth_routes(app):
             return redirect(url_for('get_tasks_html'))
         return jsonify({'message': 'Task added'}), 201
 
-    @app.route('/tasks/<int:task_id>', methods=['POST'])
+   @app.route('/tasks/<int:task_id>', methods=['POST', 'PUT', 'DELETE'])
     @login_required
     def update_or_delete_task(task_id):
         task = Task.query.get(task_id)
         if not task or task.user_id != current_user.id:
             return jsonify({'error': 'Task not found'}), 404
-
+    
+        # HTML form override
         method = request.form.get('_method')
-        if method == 'PUT':
+    
+        if method == 'PUT' or request.method == 'PUT':
             task.completed = True
             db.session.commit()
-        elif method == 'DELETE':
+            if request.form:
+                return redirect(url_for('get_tasks_html'))
+            return jsonify({'message': 'Task marked as done'})
+    
+        elif method == 'DELETE' or request.method == 'DELETE':
             db.session.delete(task)
             db.session.commit()
-        return redirect(url_for('get_tasks_html'))
+            if request.form:
+                return redirect(url_for('get_tasks_html'))
+            return jsonify({'message': 'Task deleted'})
+
+        return jsonify({'error': 'Invalid method'}), 400
+
 
     @app.route('/login', methods=['POST'])
     def login():
