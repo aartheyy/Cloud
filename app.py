@@ -28,14 +28,19 @@ def load_user(user_id):
 @app.before_first_request
 def create_tables():
     db.create_all()
-    if not Task.query.first():
+    if not User.query.filter_by(username='admin').first():
+        user = User(username='admin', password=bcrypt.generate_password_hash('admin').decode('utf-8'))
+        db.session.add(user)
+        db.session.commit()
+
         sample_tasks = [
-            Task(title="Learn Azure", user_id=1),
-            Task(title="Build To-Do List App", user_id=1),
-            Task(title="Push to GitHub & Deploy", completed=True, user_id=1)
+            Task(title="Learn Azure", user_id=user.id),
+            Task(title="Build To-Do List App", user_id=user.id),
+            Task(title="Push to GitHub & Deploy", completed=True, user_id=user.id)
         ]
         db.session.add_all(sample_tasks)
         db.session.commit()
+
 
 # Routes
 @app.route("/")
