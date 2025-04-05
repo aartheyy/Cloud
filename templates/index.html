@@ -5,11 +5,9 @@
 </head>
 <body>
     <h1>To-Do List</h1>
-
     <ul id="task-list"></ul>
-
     <input type="text" id="new-task-title" placeholder="New task title">
-    <button onclick="addTask()">Add Task</button>
+    <button onclick="addTask()">Add</button>
 
     <script>
         async function fetchTasks() {
@@ -18,13 +16,11 @@
             const list = document.getElementById('task-list');
             list.innerHTML = '';
             tasks.forEach(task => {
-                const li = document.createElement('li');
-                li.innerHTML = `
+                list.innerHTML += `<li>
                     ${task.completed ? '<s>' : ''}${task.title}${task.completed ? '</s>' : ''}
                     <button onclick="completeTask(${task.id})">✔️</button>
                     <button onclick="deleteTask(${task.id})">❌</button>
-                `;
-                list.appendChild(li);
+                </li>`;
             });
         }
 
