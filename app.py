@@ -1,4 +1,5 @@
 from flask import Flask
+from models import Task
 from db import db
 import os
 
@@ -9,7 +10,10 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///todo.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  # Optional, to suppress a warning
 
 db.init_app(app)
-
+@app.before_first_request
+def create_tables():
+    db.create_all()
+    
 @app.route('/')
 def home():
     return "Welcome to the To-Do List App!"
