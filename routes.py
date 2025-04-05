@@ -12,6 +12,7 @@ def register_routes(app):
         return jsonify([{'id': t.id, 'title': t.title, 'completed': t.completed} for t in tasks])
 
     @app.route('/tasks', methods=['POST'])
+    @login_required
     def add_task():
         data = request.get_json()
         new_task = Task(title=data['title'])
@@ -20,6 +21,7 @@ def register_routes(app):
         return jsonify({'message': 'Task added'}), 201
 
     @app.route('/tasks/<int:task_id>', methods=['PUT'])
+    @login_required
     def update_task(task_id):
         task = Task.query.get(task_id)
         if not task:
@@ -29,6 +31,7 @@ def register_routes(app):
         return jsonify({'message': 'Task completed'})
 
     @app.route('/tasks/<int:task_id>', methods=['DELETE'])
+    @login_required
     def delete_task(task_id):
         task = Task.query.get(task_id)
         if not task:
