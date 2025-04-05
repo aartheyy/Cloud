@@ -8,7 +8,7 @@ def register_routes(app):
         tasks = Task.query.all()
         return jsonify([{'id': t.id, 'title': t.title, 'completed': t.completed} for t in tasks])
 
-@app.route('/tasks', methods=['POST'])
+    @app.route('/tasks', methods=['POST'])
     def add_task():
         data = request.get_json()
         new_task = Task(title=data['title'])
