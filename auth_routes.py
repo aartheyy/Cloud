@@ -4,7 +4,7 @@ from flask import request, jsonify,render_template, url_for, redirect
 from flask_login import login_user, login_required, logout_user, current_user
 from models import Task, User
 from db import db
-from app import bcrypt  # only this import is safe
+from extensions import bcrypt 
 
 def register_auth_routes(app):
     @app.route('/tasks', methods=['GET'])
