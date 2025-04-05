@@ -35,7 +35,7 @@ def register_auth_routes(app):
             return redirect(url_for('get_tasks_html'))
         return jsonify({'message': 'Task added'}), 201
 
-   @app.route('/tasks/<int:task_id>', methods=['POST', 'PUT', 'DELETE'])
+    @app.route('/tasks/<int:task_id>', methods=['POST', 'PUT', 'DELETE'])
     @login_required
     def update_or_delete_task(task_id):
         task = Task.query.get(task_id)
@@ -61,6 +61,7 @@ def register_auth_routes(app):
 
         return jsonify({'error': 'Invalid method'}), 400
 
+    
 
     @app.route('/login', methods=['POST'])
     def login():
