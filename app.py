@@ -2,13 +2,13 @@
 
 from flask import Flask, render_template
 from flask_login import LoginManager
-from flask_bcrypt import Bcrypt
 
+from extensions import bcrypt
 from models import Task, User
 from db import db
 
 app = Flask(__name__)
-bcrypt = Bcrypt(app)
+bcrypt.init_app(app)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///todo.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
