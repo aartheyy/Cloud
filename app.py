@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, render_template
 from models import Task
 from db import db
 import os
