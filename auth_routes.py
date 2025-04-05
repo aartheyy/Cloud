@@ -11,38 +11,34 @@ def register_auth_routes(app):
     @login_required
     def get_tasks_html():
         tasks = Task.query.filter_by(user_id=current_user.id).all()
-    return render_template("tasks.html", tasks=tasks, username=current_user.username)
+        return render_template("tasks.html", tasks=tasks, username=current_user.username)
 
     @app.route('/tasks', methods=['POST'])
     @login_required
     def add_task():
-    title = request.form.get('title') or (request.json and request.json.get('title'))
-    if not title:
-        return jsonify({'error': 'No title provided'}), 400
-    new_task = Task(title=title, user_id=current_user.id)
-    db.session.add(new_task)
-    db.session.commit()
-    return redirect(url_for('get_tasks_html')) if request.form else jsonify({'message': 'Task added'}), 201
+        title = request.form.get('title') or (request.json and request.json.get('title'))
+        if not title:
+            return jsonify({'error': 'No title provided'}), 400
+        new_task = Task(title=title, user_id=current_user.id)
+        db.session.add(new_task)
+        db.session.commit()
+        return redirect(url_for('get_tasks_html')) if request.form else jsonify({'message': 'Task added'}), 201
 
-
-    @app.route('/tasks/<int:task_id>', methods=['PUT'])
+    @app.route('/tasks/<int:task_id>', methods=['POST'])
     @login_required
-   def update_or_delete_task(task_id):
-    task = Task.query.get(task_id)
-    if not task or task.user_id != current_user.id:
-        return jsonify({'error': 'Task not found'}), 404
+    def update_or_delete_task(task_id):
+        task = Task.query.get(task_id)
+        if not task or task.user_id != current_user.id:
+            return jsonify({'error': 'Task not found'}), 404
 
-    method = request.form.get('_method')
-    if method == 'PUT':
-        task.completed = True
-        db.session.commit()
+        method = request.form.get('_method')
+        if method == 'PUT':
+            task.completed = True
+            db.session.commit()
+        elif method == 'DELETE':
+            db.session.delete(task)
+            db.session.commit()
         return redirect(url_for('get_tasks_html'))
-    elif method == 'DELETE':
-        db.session.delete(task)
-        db.session.commit()
-        return redirect(url_for('get_tasks_html'))
-
-    return jsonify({'error': 'Invalid request'}), 400
 
     @app.route('/login', methods=['POST'])
     def login():
